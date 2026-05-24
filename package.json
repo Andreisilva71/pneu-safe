@@ -1,0 +1,20 @@
+{
+  "name": "portotipo-pneusafe",
+  "version": "1.0.0",
+  "description": "Prototipo funcional do Pneu-Safe com foco em IHC industrial",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "Antigravity",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  }
+}

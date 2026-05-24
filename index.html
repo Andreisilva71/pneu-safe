@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pneu-Safe | Inspeção de Pneus Industriais</title>
+    <meta name="description" content="Aplicativo industrial ergonômico para inspeção e controle de segurança de pneus fora-de-estrada e pesados.">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. SPLASH SCREEN (Carregamento Inicial) -->
+    <div id="splash-screen" class="splash-container">
+        <div class="splash-content">
+            <img src="assets/logo.jpg" alt="Pneu-Safe Logo" class="splash-logo" id="splash-logo-img">
+            <div class="splash-loader-bar">
+                <div class="splash-loader-progress"></div>
+            </div>
+            <p class="splash-tagline">Durabilidade e Segurança</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER (Invisível durante Splash) -->
+    <div id="app-container" class="app-hidden">
+        
+        <!-- HEADER FIXO -->
+        <header class="app-header">
+            <div class="header-brand">
+                <img src="assets/logo.jpg" alt="Pneu-Safe Mini Logo" class="header-logo">
+                <div class="header-title-group">
+                    <span class="header-title">Pneu-Safe</span>
+                    <span class="header-subtitle">Operacional</span>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="status-indicator-dot online"></span>
+                <span class="status-text">SQLite Local Ativo</span>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT (Roteador SPA por CSS/JS) -->
+        <main class="app-main">
+
+            <!-- ================= TELA 1: DASHBOARD DE TURNO (LISTAGEM) ================= -->
+            <section id="screen-dashboard" class="app-screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Dashboard de Turno</h1>
+                    <p class="screen-description">Acompanhamento de pneus inspecionados hoje.</p>
+                </div>
+
+                <!-- CARDS DE ESTATÍSTICA DO TURNO (Aparência Premium) -->
+                <div class="dashboard-stats">
+                    <div class="stat-card" id="stat-total-card">
+                        <div class="stat-icon-wrapper blue">
+                            <i data-lucide="activity"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Inspecionados</span>
+                            <span class="stat-value" id="stat-total-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-ok-card">
+                        <div class="stat-icon-wrapper green">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Aprovados</span>
+                            <span class="stat-value" id="stat-ok-count">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-fail-card">
+                        <div class="stat-icon-wrapper red">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Reprovados</span>
+                            <span class="stat-value" id="stat-fail-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABELA / LISTA DE PNEUS INSPECIONADOS -->
+                <div class="data-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Registros no Turno</h3>
+                        <div class="card-actions">
+                            <button class="btn-icon-only" id="btn-refresh-list" title="Atualizar Lista">
+                                <i data-lucide="rotate-cw"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="inspections-table" id="table-inspections">
+                            <thead>
+                                <tr>
+                                    <th>ID do Pneu</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Defeito</th>
+                                    <th>Data / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspections-tbody">
+                                <!-- Preenchido dinamicamente via JS -->
+                                <tr class="no-data-row">
+                                    <td colspan="5">Nenhum pneu inspecionado neste turno.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ESPAÇADOR PARA FOOTER FIXO -->
+                <div class="footer-spacer"></div>
+
+                <!-- FOOTER COM BOTÃO GIGANTE (Ergonomia Luvas) -->
+                <footer class="app-footer">
+                    <button class="btn btn-primary btn-giant" id="btn-new-inspection">
+                        <i data-lucide="plus-circle"></i>
+                        [+] Nova Inspeção
+                    </button>
+                </footer>
+            </section>
+
+
+            <!-- ================= TELA 2: CHECKLIST DE INSPEÇÃO (FORMULÁRIO) ================= -->
+            <section id="screen-checklist" class="app-screen screen-hidden">
+                <div class="screen-header">
+                    <h2 class="screen-title">Checklist de Segurança</h2>
+                    <p class="screen-description">Insira os dados do pneu e verifique as condições físicas abaixo.</p>
+                </div>
+
+                <div class="inspection-form-container">
+                    <!-- ENTRADAS GIGANTES (Uso com Luvas) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-pneu-id">ID do Pneu</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="barcode" class="input-icon"></i>
+                                <input type="text" id="input-pneu-id" placeholder="Digite ou escaneie o ID" autocomplete="off" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="select-pneu-tipo">Tipo de Pneu</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="truck" class="input-icon"></i>
+                                <select id="select-pneu-tipo" required>
+                                    <option value="" disabled selected>Selecione o tipo</option>
+                                    <option value="OTR (Fora de Estrada)">OTR (Fora de Estrada)</option>
+                                    <option value="Caminhão Pesado">Caminhão Pesado</option>
+                                    <option value="Agrícola">Agrícola</option>
+                                    <option value="Comercial Leve">Comercial Leve</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHECKLIST COM BOTOES DE ALTERNÂNCIA (TOGGLES GRANDES) -->
+                    <div class="checklist-section">
+                        <h3 class="section-title">Itens de Verificação Crítica</h3>
+                        
+                        <div class="checklist-grid">
+                            <!-- ITEM 1: Pressão de Calibragem -->
+                            <div class="checklist-card" data-item="pressao">
+                                <div class="checklist-info">
+                                    <span class="checklist-item-title">Pressão de Calibragem</span>
+                                    <span class="checklist-item-desc">Verificar PSI conforme tabela de carga</span>
+                                </div>
+                                <div class="toggle-group-glove">
+                                    <button type="button" class="btn-toggle ok active" data-value="OK">OK</button>
+                                    <button type="button" class="btn-toggle nok" data-value="NOK">FALHA</button>
+                                </div>
+                            </div>
+
+                            <!-- ITEM 2: Desgaste da Banda de Rodagem -->
+                            <div class="checklist-card" data-item="banda">
+                                <div class="checklist-info">
+                                    <span class="checklist-item-title">Banda de Rodagem</span>
+                                    <span class="checklist-item-desc">Verificar TWI e desgaste irregular</span>
+                                </div>
+                                <div class="toggle-group-glove">
+                                    <button type="button" class="btn-toggle ok active" data-value="OK">OK</button>
+                                    <button type="button" class="btn-toggle nok" data-value="NOK">FALHA</button>
+                                </div>
+                            </div>
+
+                            <!-- ITEM 3: Integridade das Laterais (Flancos) -->
+                            <div class="checklist-card" data-item="laterais">
+                                <div class="checklist-info">
+                                    <span class="checklist-item-title">Laterais (Flancos)</span>
+                                    <span class="checklist-item-desc">Cortes profundos, deformações ou abrasão</span>
+                                </div>
+                                <div class="toggle-group-glove">
+                                    <button type="button" class="btn-toggle ok active" data-value="OK">OK</button>
+                                    <button type="button" class="btn-toggle nok" data-value="NOK">FALHA</button>
+                                </div>
+                            </div>
+
+                            <!-- ITEM 4: Condição do Talão -->
+                            <div class="checklist-card" data-item="talao">
+                                <div class="checklist-info">
+                                    <span class="checklist-item-title">Condição do Talão</span>
+                                    <span class="checklist-item-desc">Avaria por montagem, oxidação de aros</span>
+                                </div>
+                                <div class="toggle-group-glove">
+                                    <button type="button" class="btn-toggle ok active" data-value="OK">OK</button>
+                                    <button type="button" class="btn-toggle nok" data-value="NOK">FALHA</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SELEÇÃO OBRIGATÓRIA DE TIPO DE DEFEITO -->
+                    <div class="defect-section">
+                        <label for="select-defeito-tipo">Tipo de Defeito Constatado (Obrigatório)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="shield-alert" class="input-icon"></i>
+                            <select id="select-defeito-tipo" required>
+                                <option value="Nenhum" selected>Nenhum Defeito Visível</option>
+                                <option value="Bolha">Bolha na Lateral / Banda</option>
+                                <option value="Rasgo">Rasgo Profundo / Exposição de Lonas</option>
+                                <option value="Outro">Outro Defeito Estrutural</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-spacer"></div>
+
+                <footer class="app-footer flex-footer">
+                    <button class="btn btn-outline btn-giant" id="btn-cancel-checklist">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-primary btn-giant" id="btn-finish-inspection">
+                        Finalizar Inspeção
+                        <i data-lucide="arrow-right"></i>
+                    </button>
+                </footer>
+            </section>
+
+
+            <!-- ================= TELA 3: RESUMO E FEEDBACK VISUAL ================= -->
+            <section id="screen-summary" class="app-screen screen-hidden">
+                <div class="screen-header">
+                    <h2 class="screen-title">Resultado da Inspeção</h2>
+                    <p class="screen-description">Valide as informações e registre no banco de dados local SQLite.</p>
+                </div>
+
+                <div class="summary-layout">
+                    <!-- CARD GIGANTE COBRINDO METADE DA TELA -->
+                    <div class="summary-result-card" id="result-status-card">
+                        <div class="result-icon-container">
+                            <i id="result-status-icon" data-lucide="check-circle" class="giant-icon"></i>
+                        </div>
+                        <div class="result-text-container">
+                            <span class="result-label">Status Final do Pneu</span>
+                            <span class="result-status-value" id="result-status-text">Aprovado</span>
+                            <p class="result-badge-desc" id="result-status-desc">O pneu atende a todos os critérios de conformidade.</p>
+                        </div>
+                    </div>
+
+                    <!-- PAINEL DE CONTROLE / INFORMAÇÕES DE SUPORTE -->
+                    <div class="summary-controls-panel">
+                        
+                        <!-- SIMULADOR DE CÂMERA INTEGRADA -->
+                        <div class="camera-simulator-card">
+                            <div class="camera-header">
+                                <span class="camera-title"><i data-lucide="camera"></i> Câmera de Evidência</span>
+                                <span class="camera-status" id="camera-status-badge">Standby</span>
+                            </div>
+                            <div class="camera-viewfinder" id="camera-viewfinder">
+                                <i data-lucide="aperture" class="viewfinder-placeholder-icon"></i>
+                                <span class="viewfinder-text">Clique no botão para registrar imagem da falha</span>
+                                <video id="camera-video" class="hidden-element" autoplay playsinline muted></video>
+                                <img id="camera-photo-preview" class="hidden-element" alt="Evidência da Inspeção">
+                                <div class="viewfinder-overlay hidden-element" id="camera-overlay">
+                                    <span class="overlay-rec-dot"></span> REC
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-medium" id="btn-trigger-camera">
+                                <i data-lucide="camera"></i>
+                                CAPTURAR IMAGEM
+                            </button>
+                        </div>
+
+                        <!-- OBSERVAÇÕES CRÍTICAS -->
+                        <div class="form-group text-area-group">
+                            <label for="input-observacoes">Observações Críticas</label>
+                            <div class="input-wrapper">
+                                <textarea id="input-observacoes" placeholder="Digite observações importantes sobre as condições do pneu ou do aro..." rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIMULADOR DE TERMINAL SQLITE INTERATIVO -->
+                <div class="sqlite-terminal-card">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="terminal-title">SQLite3 Interactive Console</span>
+                    </div>
+                    <div class="terminal-body" id="sqlite-console-body">
+                        <div class="terminal-line text-muted">-- Pneu-Safe Local Database Engine v3.45 --</div>
+                        <div class="terminal-line text-muted">PRAGMA foreign_keys = ON;</div>
+                        <div class="terminal-line text-muted">-- Aguardando persistência de dados...</div>
+                    </div>
+                    <form id="sqlite-terminal-form" style="display: flex; gap: 8px; padding: 12px; background: #0c0c0c; border-top: 1px solid #222; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                        <span style="color: var(--color-primary); font-weight: bold; font-family: monospace; font-size: 16px; align-self: center;">sqlite&gt;</span>
+                        <input type="text" id="sqlite-terminal-input" placeholder="Digite comandos SQL (Ex: SELECT * FROM inspecoes;)" style="flex: 1; background: transparent; border: none; color: #FFF; font-family: monospace; font-size: 16px; outline: none; padding: 0 4px;" autocomplete="off" />
+                        <button type="submit" class="btn btn-primary" style="height: 38px; padding: 0 16px; font-size: 14px; border-radius: 19px; margin: 0; min-height: unset; line-height: 1;">Executar</button>
+                    </form>
+                </div>
+
+                <div class="footer-spacer"></div>
+
+                <footer class="app-footer flex-footer">
+                    <button class="btn btn-outline btn-giant" id="btn-sync-data">
+                        <i data-lucide="refresh-cw"></i>
+                        Sincronizar
+                    </button>
+                    <button class="btn btn-primary btn-giant highlight-yellow" id="btn-save-sqlite">
+                        <i data-lucide="database"></i>
+                        Salvar Registro (SQLite)
+                    </button>
+                </footer>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL DE NOTIFICAÇÃO DE SALVAMENTO (Efeito Técnico SQLite) -->
+    <div id="sqlite-modal" class="modal-container hidden-element">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <i data-lucide="database" class="modal-title-icon text-yellow"></i>
+                <h3 class="modal-title">SQLite3 Transação</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-body-text">Executando instrução SQL no banco de dados local...</p>
+                <div class="sql-code-box">
+                    <pre><code id="modal-sql-query">INSERT INTO inspecoes (pneu_id, pneu_tipo, defeito_tipo, status, data_inspecao, observacoes) VALUES (?, ?, ?, ?, ?, ?);</code></pre>
+                </div>
+                <div class="sql-loader-bar">
+                    <div class="sql-loader-progress"></div>
+                </div>
+                <div class="sql-terminal-output" id="modal-sql-output">
+                    sqlite> SELECT * FROM sqlite_master;
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-medium" id="btn-close-modal">Concluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
